@@ -1,0 +1,85 @@
+; ───────────────────────────────────────────────────────────────────────────
+;  Melon Farm Macro – AutoHotkey
+;  – For servers that explicitly allow macros
+;  – Diagonal sweeps (W+D / W+A), 4 cycles = 8 rows
+;  – Aligns using item in slot 2 (1s click) after walking into row
+;  – Holds LMB throughout to break melons
+;  – Warps back to start using F12 and repeats
+;  – Toggle with F9 | Kill switch with '\'
+; ───────────────────────────────────────────────────────────────────────────
+
+#NoEnv
+#SingleInstance Force
+
+rowCount      := 4         ; ← 4 diagonal loops = 8 rows
+holdTime      := 76000     ; ← ms per row (adjust for your farm)
+delayBetween  := 100       ; ← ms between movements
+warpWaitTime  := 5000      ; ← wait time after warp (F12)
+toggle        := false
+
+F9::  ; Toggle script
+    toggle := !toggle
+    if (toggle) {
+        Send, {F12}
+        Sleep, warpWaitTime
+        Gosub, FarmLoop
+    }
+return
+
+FarmLoop:
+    if (!toggle)
+        return
+
+    ; ── STEP INTO THE ROW ──
+    Send, {w down}
+    Sleep, 1000  ; ← walk forward before aligning
+    Send, {w up}
+    Sleep, 100
+
+    ; ── ALIGNMENT USING SLOT 2 ──
+    Send, 2
+    Sleep, 50
+    Send, {LButton down}
+    Sleep, 1000  ; ← hold for 1 sec for accurate angle
+    Send, {LButton up}
+    Sleep, 50
+    Send, 1
+    Sleep, 50
+    Send, {LButton down}  ; hold for melon breaking
+
+    ; ── HOLD W TO MOVE FORWARD A BIT AFTER ALIGNMENT ──
+    Send, {w down}
+    Sleep, 300  ; ← hold W for a bit longer to ensure you start moving correctly
+    Send, {w up}
+    Sleep, 100
+
+    ; ── START FARMING ──
+    Loop, % rowCount {
+        if (!toggle)
+            break
+
+        ; → Forward (W + D)
+        Send, {w down}{d down}
+        Sleep, % holdTime
+        Send, {w up}{d up}
+        Sleep, % delayBetween
+
+        ; ← Backward (W + A)
+        Send, {w down}{a down}
+        Sleep, % holdTime
+        Send, {w up}{a up}
+        Sleep, % delayBetween
+    }
+
+    ; ── WARP & LOOP ──
+    Send, {F12}
+    Sleep, warpWaitTime
+    Gosub, FarmLoop
+return
+
+; ── EMERGENCY STOP ──
+\::
+    toggle := false
+    Send, {w up}{a up}{d up}{LButton up}
+    ExitApp
+return
