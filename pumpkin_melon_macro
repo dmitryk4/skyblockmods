@@ -12,10 +12,10 @@
 #NoEnv
 #SingleInstance Force
 
-rowCount      := 4         ; ← 4 diagonal loops = 8 rows
-holdTime      := 76000     ; ← ms per row (adjust for your farm)
-delayBetween  := 100       ; ← ms between movements
-warpWaitTime  := 5000      ; ← wait time after warp (F12)
+rowCount      := 4         ;  4 diagonal loops = 8 rows
+holdTime      := 76000     ;  ms per row (adjust for your farm)
+delayBetween  := 100       ;  ms between movements
+warpWaitTime  := 5000      ;  wait time after warp (F12)
 toggle        := false
 
 F9::  ; Toggle script
@@ -33,7 +33,7 @@ FarmLoop:
 
     ; ── STEP INTO THE ROW ──
     Send, {w down}
-    Sleep, 1000  ; ← walk forward before aligning
+    Sleep, 1000  ;  walk forward before aligning
     Send, {w up}
     Sleep, 100
 
@@ -41,7 +41,7 @@ FarmLoop:
     Send, 2
     Sleep, 50
     Send, {LButton down}
-    Sleep, 1000  ; ← hold for 1 sec for accurate angle
+    Sleep, 1000  ;  hold for 1 sec for accurate angle
     Send, {LButton up}
     Sleep, 50
     Send, 1
@@ -50,7 +50,7 @@ FarmLoop:
 
     ; ── HOLD W TO MOVE FORWARD A BIT AFTER ALIGNMENT ──
     Send, {w down}
-    Sleep, 300  ; ← hold W for a bit longer to ensure you start moving correctly
+    Sleep, 300  ;  hold W for a bit longer to ensure you start moving correctly
     Send, {w up}
     Sleep, 100
 
