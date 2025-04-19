@@ -1,5 +1,6 @@
 ; ───────────────────────────────────────────────────────────────────────────
 ;  Melon Farm Macro – AutoHotkey
+;  Save as .ahk file
 ;  – For servers that explicitly allow macros
 ;  – Diagonal sweeps (W+D / W+A), 4 cycles = 8 rows
 ;  – Aligns using item in slot 2 (1s click) after walking into row
