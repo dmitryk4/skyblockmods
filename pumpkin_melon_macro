@@ -1,12 +1,11 @@
 ; ───────────────────────────────────────────────────────────────────────────
-;  Melon/Pumpkin Farm Macro w/ Hourly Pest Repellent & Auto‑Kill – AutoHotkey
+;  Melon/Pumpkin Farm Macro w/ Auto‑Kill – AutoHotkey
 ;  – Always holds LMB down while farming
 ;  – Diagonal sweeps (W+D / W+A), 4 cycles = 8 rows
 ;  – Aligns with slot 2 tool before each run
 ;  – Warps back with F12, loops
-;  – Takes pest repellent every hour (slots 3→6)
-;  – Automatically stops after 1 hour
-;  – Toggle ON/OFF with F9 | Emergency kill with '\'
+;  – Automatically exits after 1 hour
+;  – Toggle ON/OFF with F9 | Emergency exit with '\'
 ; ───────────────────────────────────────────────────────────────────────────
 
 #NoEnv
@@ -14,10 +13,9 @@
 
 ; ── Config ─────────────────────────────────────────────────────────────────
 rowCount         := 4           ; 4 cycles = 8 rows
-holdTime         := 76000       ; ms per row (tweak for your farm)
+holdTime         := 76000       ; ms per row (adjust to your farm)
 delayBetween     := 100         ; ms between sweeps
-warpWaitTime     := 5000        ; ms wait after warp (F12)
-repellentInterval:= 3600000     ; 1 hour in ms
+warpWaitTime     := 5000        ; ms to wait after warp (F12)
 autoKillInterval := 3600000     ; 1 hour in ms
 toggle           := false
 
@@ -25,88 +23,69 @@ toggle           := false
 F9::  ; Toggle macro
     toggle := !toggle
     if (toggle) {
-        TrayTip, Farm Macro, Macro STARTED, 2
-        ; hold LMB down
         Send, {LButton down}
         Sleep, 50
-        ; start repellent timer
-        SetTimer, UseRepellent, %repellentInterval%
-        ; start auto‑kill timer
         SetTimer, AutoKill, -%autoKillInterval%
-        ; begin farming
         Gosub, FarmLoop
     } else {
-        ; stop repellent & auto‑kill
-        SetTimer, UseRepellent, Off
         SetTimer, AutoKill, Off
-        ; release LMB
         Send, {LButton up}
-        TrayTip, Farm Macro, Macro STOPPED, 2
     }
 return
 
-\::  ; Emergency kill
-    Gosub, _KillMacro
-return
-
-; ── Auto‑Kill after 1 hour ─────────────────────────────────────────────────
-AutoKill:
-    Gosub, _KillMacro("AUTO‑KILL after 1h")
-return
-
-; ── Shared kill routine ───────────────────────────────────────────────────
-_KillMacro(reason := "KILLED") {
-    toggle := false
-    SetTimer, UseRepellent, Off
-    SetTimer, AutoKill, Off
-    SetTimer, FarmLoop, Off
-    Send, {LButton up}
-    TrayTip, Farm Macro, %reason%, 3
+\::  ; Emergency exit
     ExitApp
-}
+return
+
+; ── Auto‑Kill after 1 hour ──────────────────────────────────────────────────
+AutoKill:
+    ExitApp
+return
 
 ; ── Farming Routine ────────────────────────────────────────────────────────
 FarmLoop:
     if (!toggle)
         return
 
-    ; step into row
+    ; Step into row
     Send, {w down}
     Sleep, 1000
     Send, {w up}
     Sleep, 100
 
-    ; align with slot 2
+    ; Align with slot 2
     Send, 2
     Sleep, 50
-    Send, {LButton up}   ; briefly release to align
+    Send, {LButton up}    ; briefly release to align
     Sleep, 50
-    Send, {LButton down} ; re‑hold for breaking
+    Send, {LButton down}  ; re‑hold for breaking
     Sleep, 50
     Send, 1
     Sleep, 50
 
-    ; short forward to lock direction
+    ; Short forward to lock direction
     Send, {w down}
     Sleep, 300
     Send, {w up}
     Sleep, 100
 
-    ; diagonal sweeps
+    ; Diagonal sweeps
     Loop, % rowCount {
         if (!toggle)
             break
+        ; → Forward (W + D)
         Send, {w down}{d down}
         Sleep, % holdTime
         Send, {w up}{d up}
         Sleep, % delayBetween
+        ; ← Backward (W + A)
         Send, {w down}{a down}
         Sleep, % holdTime
         Send, {w up}{a up}
         Sleep, % delayBetween
     }
 
-    ; warp & repeat
+    ; Warp & repeat
     Send, {F12}
     Sleep, warpWaitTime
     Gosub, FarmLoop
