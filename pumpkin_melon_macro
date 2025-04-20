@@ -13,7 +13,7 @@
 #SingleInstance Force
 
 rowCount      := 4         ;  4 diagonal loops = 8 rows
-holdTime      := 76000     ;  ms per row (adjust for your farm)
+holdTime      := 74000     ;  ms per row (adjust for your farm)
 delayBetween  := 100       ;  ms between movements
 warpWaitTime  := 5000      ;  wait time after warp (F12)
 toggle        := false
