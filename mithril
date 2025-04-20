@@ -1,0 +1,92 @@
+#NoEnv
+#SingleInstance Force
+SetTitleMatchMode, 2
+CoordMode, Pixel, Screen
+CoordMode, Mouse, Screen
+SetDefaultMouseSpeed, 10
+
+; === Settings ===
+toggle := false
+searchColor1 := 0x3AAFD9 ; Light Blue wool (Mithril)
+searchColors := [0x117777, 0x419292, 0x70ADAD, 0xA0C9C9, 0xCFE4E4] ; Prismarine colors (Green wool)
+tolerance := 10
+scanArea := {x1: 800, y1: 400, x2: 1120, y2: 700}
+maxTries := 5
+scanDelay := 200
+holdTime := 500 ; time to hold LMB when mining (ms)
+
+; === Hotkeys ===
+F9:: ; Toggle Macro
+toggle := !toggle
+if (toggle) {
+    TrayTip, Mithril Macro, Mithril mining macro enabled!, 3
+    SetTimer, MithrilLoop, 100
+} else {
+    TrayTip, Mithril Macro, Mithril mining macro disabled., 3
+    SetTimer, MithrilLoop, Off
+    MouseClick, Left, , , , Up
+}
+return
+
+\:: ; Emergency Kill Switch
+toggle := false
+SetTimer, MithrilLoop, Off
+MouseClick, Left, , , , Up
+TrayTip, Mithril Macro, Macro force stopped., 3
+ExitApp
+return
+
+; === Mining Logic ===
+MithrilLoop:
+if (!toggle)
+    return
+
+attempts := 0
+found := false
+
+Loop {
+    attempts++
+    if (attempts > maxTries) {
+        TrayTip, Mithril Macro, No blocks found after %maxTries% tries. Pausing., 3
+        return
+    }
+
+    ; Try light blue wool
+    found := PixelSearchInArea(searchColor1)
+    if (!found) {
+        ; Try each green prismarine color
+        found := false
+        Loop, % searchColors.MaxIndex() {
+            found := PixelSearchInArea(searchColors[A_Index])
+            if (found) {
+                break
+            }
+        }
+    }
+
+    if (found) {
+        ClickAndMine(found.x, found.y)
+        break
+    }
+
+    Sleep, %scanDelay%
+}
+return
+
+; === Helper Functions ===
+PixelSearchInArea(color) {
+    global scanArea, tolerance
+    PixelSearch, fx, fy, scanArea.x1, scanArea.y1, scanArea.x2, scanArea.y2, color, tolerance, Fast RGB
+    if (ErrorLevel = 0)
+        return {x: fx, y: fy}
+    return false
+}
+
+ClickAndMine(x, y) {
+    global holdTime
+    MouseMove, x, y, 15
+    Sleep, 50
+    MouseClick, Left, , , , Down
+    Sleep, holdTime
+    MouseClick, Left, , , , Up
+}
