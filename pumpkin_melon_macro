@@ -1,83 +1,70 @@
 ; ───────────────────────────────────────────────────────────────────────────
-;  Melon/Pumpkin Farm Macro w/ Auto‑Kill – AutoHotkey
-;  – Always holds LMB down while farming
+;  Melon Farm Macro – AutoHotkey
+;  Save as .ahk file
+;  – For servers that explicitly allow macros
 ;  – Diagonal sweeps (W+D / W+A), 4 cycles = 8 rows
-;  – Aligns with slot 2 tool before each run
-;  – Warps back with F12, loops
-;  – Automatically exits after 1 hour
-;  – Toggle ON/OFF with F9 | Emergency exit with '\'
+;  – Aligns using item in slot 2 (1s click) after walking into row
+;  – Holds LMB throughout to break melons
+;  – Warps back to start using F12 and repeats
+;  – Toggle with F9 | Kill switch with '\'
 ; ───────────────────────────────────────────────────────────────────────────
 
 #NoEnv
 #SingleInstance Force
 
-; ── Config ─────────────────────────────────────────────────────────────────
-rowCount         := 4           ; 4 cycles = 8 rows
-holdTime         := 76000       ; ms per row (adjust to your farm)
-delayBetween     := 100         ; ms between sweeps
-warpWaitTime     := 5000        ; ms to wait after warp (F12)
-autoKillInterval := 3600000     ; 1 hour in ms
-toggle           := false
+rowCount      := 4         ;  4 diagonal loops = 8 rows
+holdTime      := 74000     ;  ms per row (adjust for your farm)
+delayBetween  := 100       ;  ms between movements
+warpWaitTime  := 5000      ;  wait time after warp (F12)
+toggle        := false
 
-; ── Hotkeys ────────────────────────────────────────────────────────────────
-F9::  ; Toggle macro
+F9::  ; Toggle script
     toggle := !toggle
     if (toggle) {
-        Send, {LButton down}
-        Sleep, 50
-        SetTimer, AutoKill, -%autoKillInterval%
+        Send, {F12}
+        Sleep, warpWaitTime
         Gosub, FarmLoop
-    } else {
-        SetTimer, AutoKill, Off
-        Send, {LButton up}
     }
 return
 
-\::  ; Emergency exit
-    ExitApp
-return
-
-; ── Auto‑Kill after 1 hour ──────────────────────────────────────────────────
-AutoKill:
-    ExitApp
-return
-
-; ── Farming Routine ────────────────────────────────────────────────────────
 FarmLoop:
     if (!toggle)
         return
 
-    ; Step into row
+    ; ── STEP INTO THE ROW ──
     Send, {w down}
-    Sleep, 1000
+    Sleep, 1000  ;  walk forward before aligning
     Send, {w up}
     Sleep, 100
 
-    ; Align with slot 2
+    ; ── ALIGNMENT USING SLOT 2 ──
     Send, 2
     Sleep, 50
-    Send, {LButton up}    ; briefly release to align
-    Sleep, 50
-    Send, {LButton down}  ; re‑hold for breaking
+    Send, {LButton down}
+    Sleep, 1000  ;  hold for 1 sec for accurate angle
+    Send, {LButton up}
     Sleep, 50
     Send, 1
     Sleep, 50
+    Send, {LButton down}  ; hold for melon breaking
 
-    ; Short forward to lock direction
+    ; ── HOLD W TO MOVE FORWARD A BIT AFTER ALIGNMENT ──
     Send, {w down}
-    Sleep, 300
+    Sleep, 300  ;  hold W for a bit longer to ensure you start moving correctly
     Send, {w up}
     Sleep, 100
 
-    ; Diagonal sweeps
+    ; ── START FARMING ──
     Loop, % rowCount {
         if (!toggle)
             break
+
         ; → Forward (W + D)
         Send, {w down}{d down}
         Sleep, % holdTime
         Send, {w up}{d up}
         Sleep, % delayBetween
+
         ; ← Backward (W + A)
         Send, {w down}{a down}
         Sleep, % holdTime
@@ -85,8 +72,15 @@ FarmLoop:
         Sleep, % delayBetween
     }
 
-    ; Warp & repeat
+    ; ── WARP & LOOP ──
     Send, {F12}
     Sleep, warpWaitTime
     Gosub, FarmLoop
+return
+
+; ── EMERGENCY STOP ──
+\::
+    toggle := false
+    Send, {w up}{a up}{d up}{LButton up}
+    ExitApp
 return
